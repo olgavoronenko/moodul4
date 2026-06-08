@@ -15,6 +15,10 @@ function nurr_theme_setup() {
 }
 add_action( 'after_setup_theme', 'nurr_theme_setup' );
 
+function nurr_asset_uri( $path ) {
+	return get_template_directory_uri() . '/assets/' . ltrim( $path, '/' );
+}
+
 function nurr_enqueue_assets() {
 	wp_enqueue_style(
 		'nurr-fonts',
