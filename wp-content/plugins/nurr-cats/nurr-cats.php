@@ -62,13 +62,24 @@ function nurr_cats_render_details_meta_box( $post ) {
 		?>
 		<p>
 			<label for="<?php echo esc_attr( $key ); ?>"><strong><?php echo esc_html( $field['label'] ); ?></strong></label><br>
-			<input
-				id="<?php echo esc_attr( $key ); ?>"
-				name="<?php echo esc_attr( $key ); ?>"
-				type="text"
-				value="<?php echo esc_attr( $value ); ?>"
-				style="width: 100%; max-width: 420px;"
-			>
+			<?php if ( isset( $field['options'] ) ) : ?>
+				<select id="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( $key ); ?>" style="width: 100%; max-width: 420px;">
+					<option value=""><?php esc_html_e( 'Vali...', 'nurr-cats' ); ?></option>
+					<?php foreach ( $field['options'] as $option_value => $option_label ) : ?>
+						<option value="<?php echo esc_attr( $option_value ); ?>" <?php selected( $value, $option_value ); ?>>
+							<?php echo esc_html( $option_label ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			<?php else : ?>
+				<input
+					id="<?php echo esc_attr( $key ); ?>"
+					name="<?php echo esc_attr( $key ); ?>"
+					type="text"
+					value="<?php echo esc_attr( $value ); ?>"
+					style="width: 100%; max-width: 420px;"
+				>
+			<?php endif; ?>
 		</p>
 		<?php
 	}
@@ -80,13 +91,22 @@ function nurr_cats_get_detail_fields() {
 			'label' => __( 'Vanus', 'nurr-cats' ),
 		),
 		'nurr_cat_gender'      => array(
-			'label' => __( 'Sugu', 'nurr-cats' ),
+			'label'   => __( 'Sugu', 'nurr-cats' ),
+			'options' => array(
+				'male'   => __( 'Isane', 'nurr-cats' ),
+				'female' => __( 'Emane', 'nurr-cats' ),
+			),
 		),
 		'nurr_cat_color'       => array(
 			'label' => __( 'Värv', 'nurr-cats' ),
 		),
 		'nurr_cat_personality' => array(
-			'label' => __( 'Iseloom', 'nurr-cats' ),
+			'label'   => __( 'Iseloom', 'nurr-cats' ),
+			'options' => array(
+				'playful' => __( 'Mänguline', 'nurr-cats' ),
+				'calm'    => __( 'Rahulik', 'nurr-cats' ),
+				'curious' => __( 'Uudishimulik', 'nurr-cats' ),
+			),
 		),
 	);
 }
