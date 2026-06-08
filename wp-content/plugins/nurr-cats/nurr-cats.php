@@ -136,6 +136,46 @@ function nurr_cats_save_details( $post_id ) {
 }
 add_action( 'save_post_nurr_cat', 'nurr_cats_save_details' );
 
+function nurr_cats_register_meta_fields() {
+	foreach ( array_keys( nurr_cats_get_detail_fields() ) as $key ) {
+		register_post_meta(
+			'nurr_cat',
+			$key,
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'show_in_rest'      => true,
+				'sanitize_callback' => 'sanitize_text_field',
+				'auth_callback'     => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+	}
+}
+add_action( 'init', 'nurr_cats_register_meta_fields' );
+
+function nurr_cats_enqueue_editor_assets( $hook ) {
+	if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+		return;
+	}
+
+	$screen = get_current_screen();
+
+	if ( ! $screen || 'nurr_cat' !== $screen->post_type ) {
+		return;
+	}
+
+	wp_enqueue_script(
+		'nurr-cats-editor',
+		plugins_url( 'assets/js/cat-editor.js', __FILE__ ),
+		array( 'wp-plugins', 'wp-edit-post', 'wp-element', 'wp-components', 'wp-data' ),
+		'0.1.0',
+		true
+	);
+}
+add_action( 'admin_enqueue_scripts', 'nurr_cats_enqueue_editor_assets' );
+
 function nurr_cats_activate() {
 	nurr_cats_register_post_type();
 	flush_rewrite_rules();

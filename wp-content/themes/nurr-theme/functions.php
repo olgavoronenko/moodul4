@@ -19,6 +19,55 @@ function nurr_asset_uri( $path ) {
 	return get_template_directory_uri() . '/assets/' . ltrim( $path, '/' );
 }
 
+function nurr_create_default_pages() {
+	if ( get_option( 'nurr_default_pages_created' ) ) {
+		return;
+	}
+
+	$pages = array(
+		array(
+			'title' => 'Kassid',
+			'slug'  => 'kassid',
+		),
+		array(
+			'title' => 'Broneeri',
+			'slug'  => 'broneeri',
+		),
+		array(
+			'title' => 'Kontakt',
+			'slug'  => 'kontakt',
+		),
+		array(
+			'title' => 'Teenustingimused',
+			'slug'  => 'tingimused',
+		),
+		array(
+			'title' => 'Privaatsuspoliitika',
+			'slug'  => 'privaatsus',
+		),
+	);
+
+	foreach ( $pages as $page ) {
+		if ( get_page_by_path( $page['slug'] ) ) {
+			continue;
+		}
+
+		wp_insert_post(
+			array(
+				'post_title'   => $page['title'],
+				'post_name'    => $page['slug'],
+				'post_status'  => 'publish',
+				'post_type'    => 'page',
+				'post_content' => '',
+			)
+		);
+	}
+
+	update_option( 'nurr_default_pages_created', 1 );
+}
+add_action( 'after_switch_theme', 'nurr_create_default_pages' );
+add_action( 'admin_init', 'nurr_create_default_pages' );
+
 function nurr_enqueue_assets() {
 	wp_enqueue_style(
 		'nurr-fonts',
