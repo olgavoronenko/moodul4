@@ -20,10 +20,6 @@ function nurr_asset_uri( $path ) {
 }
 
 function nurr_create_default_pages() {
-	if ( get_option( 'nurr_default_pages_created' ) ) {
-		return;
-	}
-
 	$pages = array(
 		array(
 			'title' => 'Kassid',
@@ -47,26 +43,67 @@ function nurr_create_default_pages() {
 		),
 	);
 
+	$created_pages = array();
+	$failed_pages  = array();
+
 	foreach ( $pages as $page ) {
 		if ( get_page_by_path( $page['slug'] ) ) {
 			continue;
 		}
 
-		wp_insert_post(
+		$page_id = wp_insert_post(
 			array(
 				'post_title'   => $page['title'],
 				'post_name'    => $page['slug'],
 				'post_status'  => 'publish',
 				'post_type'    => 'page',
 				'post_content' => '',
-			)
+			),
+			true
 		);
+
+		if ( is_wp_error( $page_id ) ) {
+			$failed_pages[] = $page['title'] . ': ' . $page_id->get_error_message();
+			continue;
+		}
+
+		if ( $page_id ) {
+			$created_pages[] = $page['title'];
+		}
 	}
 
-	update_option( 'nurr_default_pages_created', 1 );
+	if ( $created_pages ) {
+		update_option( 'nurr_created_pages_notice', implode( ', ', $created_pages ) );
+	}
+
+	if ( $failed_pages ) {
+		update_option( 'nurr_failed_pages_notice', implode( '; ', $failed_pages ) );
+	}
 }
 add_action( 'after_switch_theme', 'nurr_create_default_pages' );
-add_action( 'admin_init', 'nurr_create_default_pages' );
+add_action( 'wp_loaded', 'nurr_create_default_pages' );
+
+function nurr_show_default_pages_notice() {
+	$created_pages = get_option( 'nurr_created_pages_notice' );
+	$failed_pages  = get_option( 'nurr_failed_pages_notice' );
+
+	if ( $created_pages ) {
+		printf(
+			'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+			esc_html( 'Nurr pages created: ' . $created_pages )
+		);
+		delete_option( 'nurr_created_pages_notice' );
+	}
+
+	if ( $failed_pages ) {
+		printf(
+			'<div class="notice notice-error is-dismissible"><p>%s</p></div>',
+			esc_html( 'Nurr page creation failed: ' . $failed_pages )
+		);
+		delete_option( 'nurr_failed_pages_notice' );
+	}
+}
+add_action( 'admin_notices', 'nurr_show_default_pages_notice' );
 
 function nurr_enqueue_assets() {
 	wp_enqueue_style(
