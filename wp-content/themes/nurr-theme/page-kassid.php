@@ -9,6 +9,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+function nurr_get_cat_age_group( $age ) {
+	$normalized_age = strtolower( trim( $age ) );
+
+	if ( false !== strpos( $normalized_age, 'kuud' ) || false !== strpos( $normalized_age, 'kuu' ) ) {
+		return 'kitten';
+	}
+
+	if ( preg_match( '/\d+/', $normalized_age, $matches ) && (int) $matches[0] >= 6 ) {
+		return 'senior';
+	}
+
+	return 'adult';
+}
+
 get_header();
 
 $cats = new WP_Query(
@@ -60,7 +74,7 @@ $cats = new WP_Query(
                 ?>
                 <article
                   class="cat-card"
-                  data-age="<?php echo esc_attr( sanitize_title( $age ) ); ?>"
+                  data-age="<?php echo esc_attr( nurr_get_cat_age_group( $age ) ); ?>"
                   data-gender="<?php echo esc_attr( sanitize_title( $gender ) ); ?>"
                   data-personality="<?php echo esc_attr( sanitize_title( $personality ) ); ?>"
                 >
@@ -89,4 +103,3 @@ $cats = new WP_Query(
 
 <?php
 get_footer();
-
