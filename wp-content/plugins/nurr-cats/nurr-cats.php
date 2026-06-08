@@ -40,6 +40,82 @@ function nurr_cats_register_post_type() {
 }
 add_action( 'init', 'nurr_cats_register_post_type' );
 
+function nurr_cats_add_meta_boxes() {
+	add_meta_box(
+		'nurr_cat_details',
+		__( 'Kassi andmed', 'nurr-cats' ),
+		'nurr_cats_render_details_meta_box',
+		'nurr_cat',
+		'normal',
+		'default'
+	);
+}
+add_action( 'add_meta_boxes', 'nurr_cats_add_meta_boxes' );
+
+function nurr_cats_render_details_meta_box( $post ) {
+	wp_nonce_field( 'nurr_save_cat_details', 'nurr_cat_details_nonce' );
+
+	$fields = nurr_cats_get_detail_fields();
+
+	foreach ( $fields as $key => $field ) {
+		$value = get_post_meta( $post->ID, $key, true );
+		?>
+		<p>
+			<label for="<?php echo esc_attr( $key ); ?>"><strong><?php echo esc_html( $field['label'] ); ?></strong></label><br>
+			<input
+				id="<?php echo esc_attr( $key ); ?>"
+				name="<?php echo esc_attr( $key ); ?>"
+				type="text"
+				value="<?php echo esc_attr( $value ); ?>"
+				style="width: 100%; max-width: 420px;"
+			>
+		</p>
+		<?php
+	}
+}
+
+function nurr_cats_get_detail_fields() {
+	return array(
+		'nurr_cat_age'         => array(
+			'label' => __( 'Vanus', 'nurr-cats' ),
+		),
+		'nurr_cat_gender'      => array(
+			'label' => __( 'Sugu', 'nurr-cats' ),
+		),
+		'nurr_cat_color'       => array(
+			'label' => __( 'Värv', 'nurr-cats' ),
+		),
+		'nurr_cat_personality' => array(
+			'label' => __( 'Iseloom', 'nurr-cats' ),
+		),
+	);
+}
+
+function nurr_cats_save_details( $post_id ) {
+	if ( ! isset( $_POST['nurr_cat_details_nonce'] ) ) {
+		return;
+	}
+
+	if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nurr_cat_details_nonce'] ) ), 'nurr_save_cat_details' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	foreach ( array_keys( nurr_cats_get_detail_fields() ) as $key ) {
+		if ( isset( $_POST[ $key ] ) ) {
+			update_post_meta( $post_id, $key, sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) );
+		}
+	}
+}
+add_action( 'save_post_nurr_cat', 'nurr_cats_save_details' );
+
 function nurr_cats_activate() {
 	nurr_cats_register_post_type();
 	flush_rewrite_rules();
