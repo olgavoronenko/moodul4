@@ -11,12 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 get_header();
 
-$cat_id      = get_the_ID();
-$age         = get_post_meta( $cat_id, 'nurr_cat_age', true );
-$gender      = get_post_meta( $cat_id, 'nurr_cat_gender', true );
-$color       = get_post_meta( $cat_id, 'nurr_cat_color', true );
-$personality = get_post_meta( $cat_id, 'nurr_cat_personality', true );
-
 $gender_labels = array(
 	'male'   => __( 'Isane', 'nurr' ),
 	'female' => __( 'Emane', 'nurr' ),
@@ -31,15 +25,33 @@ $personality_labels = array(
 
     <main>
       <?php while ( have_posts() ) : ?>
-        <?php the_post(); ?>
+        <?php
+        the_post();
 
-        <article class="cat-profile container">
+        $cat_id      = get_the_ID();
+        $age         = get_post_meta( $cat_id, 'nurr_cat_age', true );
+        $gender      = get_post_meta( $cat_id, 'nurr_cat_gender', true );
+        $color       = get_post_meta( $cat_id, 'nurr_cat_color', true );
+        $personality = get_post_meta( $cat_id, 'nurr_cat_personality', true );
+        ?>
+
+        <article class="cat-profile container" aria-labelledby="cat-profile-title">
           <div class="cat-profile__gallery">
             <div class="cat-profile__main-media">
               <?php if ( has_post_thumbnail() ) : ?>
-                <?php the_post_thumbnail( 'large', array( 'data-profile-main-image' => '' ) ); ?>
+                <?php
+                the_post_thumbnail(
+                	'large',
+                	array(
+                		'class'                   => 'cat-profile__main-image',
+                		'loading'                 => 'eager',
+                		'data-profile-main-image' => '',
+                	)
+                );
+                ?>
               <?php else : ?>
                 <img
+                  class="cat-profile__main-image"
                   src="<?php echo esc_url( nurr_asset_uri( 'images/cat-black-white-chair.webp' ) ); ?>"
                   width="900"
                   height="900"
@@ -51,7 +63,7 @@ $personality_labels = array(
           </div>
 
           <div class="cat-profile__content">
-            <h1><?php the_title(); ?></h1>
+            <h1 id="cat-profile-title"><?php the_title(); ?></h1>
             <p class="cat-profile__eyebrow"><?php esc_html_e( 'Populaarseim', 'nurr' ); ?></p>
 
             <div class="cat-profile__description">
@@ -98,4 +110,3 @@ $personality_labels = array(
 
 <?php
 get_footer();
-
